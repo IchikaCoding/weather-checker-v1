@@ -102,6 +102,7 @@ async function main() {
 // 1) データを整理するだけの関数
 /**
  * TODO: 返り値は(3) [{…}, {…}, {…}]の形だと思う
+ * TODO: 型の情報を追加する
  * @param {object[]} data
  * @returns {object[]}
  */
