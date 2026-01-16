@@ -1,0 +1,53 @@
+/* CSS：見た目を整えるところ */
+body {
+  font-family: sans-serif;
+  background-color: #f0f8ff;
+  padding: 20px;
+}
+h1 {
+  text-align: center;
+  color: #333;
+}
+#weather-container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+.weather-card {
+  background-color: white;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.location-title {
+  font-size: 1.5em;
+  color: #007bff;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 5px;
+  margin-bottom: 10px;
+}
+.info-list {
+  background-color: #eee;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 0.9em;
+  margin-bottom: 10px;
+}
+.forecast-item {
+  border-bottom: 1px dotted #ccc;
+  padding: 5px 0;
+}
+button {
+  display: block;
+  margin: 0 auto 20px;
+  padding: 10px 20px;
+  font-size: 1.2em;
+  cursor: pointer;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+button:hover {
+  background-color: #0056b3;
+}
