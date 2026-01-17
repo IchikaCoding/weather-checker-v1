@@ -32,10 +32,13 @@ async function main() {
     const container = document.getElementById("weather-container");
     const id = Number(locationIdElement.value);
     console.log(id);
+    // TODO: この読み込み中は別の関数で実行したほうがいいかも！
     container.innerHTML = "読み込み中..."; // 待ち時間の演出
-    // TODO: なぜここでawait？
+    // TODO: なぜここでawait？awaitしないとundefinedになってしまうから？
+    // 非同期処理で取得したデータを使うなら、全部awaitが必要になるってこと？
     const data = await fetchWeather(id);
-    await renderWeather(data);
+    // 同期処理だからawaitは不要！
+    renderWeather(data);
   } catch (error) {
     console.error(error);
   }
@@ -48,6 +51,36 @@ function processData(locationStringId) {
   locationStringId.split(",");
 }
 
+function getThreeDayData(data) {
+  forecastInfoArray = data.forecasts.map((forecast) => {
+    const date = forecast.date ?? "なし";
+    const dateLabel = forecast.dateLabel ?? "なし";
+    const telop = forecast.telop ?? "なし";
+    return { date, dateLabel, telop };
+  });
+  return forecastInfoArray;
+}
+// forecastInfoArrayから、HTML要素を作成する
+// forecastInfoArrayからデータを一つずつ取得
+// そのデータをforecastsHtmlにまとめる
+// <h2>場所：東京</h2>+forecastsHtmlを返す
+function makeHtmlElement(forecastInfoArray) {
+  if (forecastInfoArray.length === 0) {
+    return `<p>天気予報が取得できませんでした😱</p>`;
+  }
+  const forecastHtml = forecastInfoArray
+    .map((forecastInfo) => {
+      return `<ul>
+          <li>
+            日付：${forecastInfo.date}（${forecastInfo.dateLabel}）
+          </li>
+          <li>天気：${forecastInfo.telop}</li>
+        </ul>`;
+    })
+    .join("");
+  return `<h2>場所：東京</h2>${forecastHtml}`;
+}
+
 // 表示する関数
 // コンテナを用意する
 // 取得したデータをもらって、その天気予報のプロパティから一部のデータをコンテナに追加する
@@ -56,48 +89,9 @@ function processData(locationStringId) {
 function renderWeather(data) {
   // console.log(data);
   const container = document.getElementById("weather-container");
-  // データがなかったら場合の処理
-  if (!data || !data.forecasts) {
-    container.textContent = "天気予報が取得できませんでした";
-  }
-  console.log(getThreeDayForecast(data));
-  // const date = data?.forecasts[0].date || "なし";
-  // const dateLabel = data?.forecasts[0].dateLabel || "なし";
-  // const telop = data?.forecasts[0].telop || "なし";
-  // console.log(date);
-  // console.log(dateLabel);
-  // console.log(telop);
-  // container.innerHTML = `<h2>場所：東京</h2>
-  //     <ul>
-  //       <li>日付：${date}（${dateLabel}）</li>
-  //       <li>天気：${telop}</li>
-  //     </ul>`;
-}
-
-// 今日・明日・明後日のデータを取得
-// TODO: 天気予報の情報を保管しておくための配列を用意
-// 「??」はnull合体演算子で、これなら 左辺がnull または undefined の場合に右辺を使用する
-// 「||」なら空文字や0も右辺が使われる！
-// getは違う！
-function getThreeDayForecast(data) {
-  let forecastInfoArray = [];
-  for (const forecast of data.forecasts) {
-    const date = forecast.date ?? "なし";
-    const dateLabel = forecast.dateLabel ?? "なし";
-    const telop = forecast.telop ?? "なし";
-    // console.log(date);
-    // console.log(dateLabel);
-    // console.log(telop);
-    forecastInfoArray.push({ date, dateLabel, telop });
-    // 表示する
-    const container = document.getElementById("weather-container");
-    container.innerHTML =
-      container.innerHTML +
-      `<h2>場所：東京</h2>
-     <ul>
-      <li>日付：${date}（${dateLabel}）</li>
-    <li>天気：${telop}</li>
-    </ul>`;
-  }
-  return forecastInfoArray;
+  // threeDayData(data)から必要なデータだけ取得する
+  const forecastInfoArray = getThreeDayData(data);
+  // そのデータを使ってHTMLの要素たちを取得する
+  const htmlEl = makeHtmlElement(forecastInfoArray);
+  container.innerHTML = htmlEl;
 }
