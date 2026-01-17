@@ -151,3 +151,23 @@ function renderWeather(data) {
   const forecastList = getThreeDayForecast(data);
   container.innerHTML = renderForecastList(forecastList);
 }
+
+// ーーーーーーーーーーーーーーーーーーーー
+
+function isValidNumericInput(value) {
+  // 前後の空白を削除
+  const trimmed = value.trim();
+  // 空文字だったらfalse返す
+  if (trimmed === "") return false;
+  // 0~9の数字か確認する
+  // .test()は文字列の複数の照合を反復処理することができるらしい
+  return /^[0-9]+$/.test(trimmed);
+}
+
+// 使い方例
+const input = " 0012 ";
+if (isValidNumericInput(input)) {
+  console.log("有効な数字入力");
+} else {
+  console.log("無効な入力");
+}

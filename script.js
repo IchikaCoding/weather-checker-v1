@@ -9,10 +9,10 @@ weatherBtnElement.addEventListener("click", main);
 // API通信する→404だったらエラー投げる
 // 成功したらオブジェクトのデータを返す
 
-// TODO: return errorは違うらしい！
 async function fetchWeather(locationId) {
   try {
     // fetchしてAPI通信してデータ取得する
+    // URLはテキストだからlocationIdは文字列のままでOK
     const res = await fetch(
       `https://weather.tsukumijima.net/api/forecast/city/${locationId}`
     );
@@ -23,7 +23,8 @@ async function fetchWeather(locationId) {
     console.log(dataObj);
     return dataObj;
   } catch (error) {
-    return error;
+    // 上で発生したエラーをそのままmain()のtry / catchにわたす！
+    throw error;
   }
 }
 
@@ -32,11 +33,14 @@ async function main() {
   try {
     displayLoading();
     const id = getId();
+    if (!isValidNumericInput(id)) {
+      alert("有効な数字を入力してください");
+      throw new Error("有効な数字を入力してください");
+    }
     // console.log(id);
     // 非同期処理だけのところでawaitが必要
     const data = await fetchWeather(id);
     // TODO: ここでdataが取得できていなかった場合の処理を書いておく
-
     // 同期処理だからawaitは不要！
     renderWeather(data);
   } catch (error) {
@@ -48,9 +52,20 @@ async function main() {
 // TODO: IDがinvalidのときはどこでお知らせする？
 function getId() {
   const locationIdElement = document.getElementById("location-id");
-  // TODO: 最初の0が消えちゃうからNumberにしちゃだめかも？！
-  const id = Number(locationIdElement.value);
-  return id;
+  return locationIdElement.value;
+  // 空かチェック
+  // 数字に変換してNaNかチェック
+}
+
+/**
+ * 入力された数字が有効かどうかを判定する関数
+ * @param {string} id
+ * @returns {boolean}
+ */
+function isValidNumericInput(id) {
+  const trimmed = id.trim();
+  if (trimmed === "") return false;
+  return /^[0-9]+$/.test(trimmed);
 }
 
 // TODO: ローディングアニメーション実装
