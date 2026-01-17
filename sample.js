@@ -119,11 +119,18 @@ function getThreeDayForecast(data) {
 }
 
 // 2) 表示用のHTMLを作るだけの関数
+/**
+ *
+ * @param {Array} forecastList
+ * @returns
+ */
 function renderForecastList(forecastList) {
   if (forecastList.length === 0) {
     return "<p>天気予報が取得できませんでした</p>";
   }
-
+  // TODO: リストが連なると予測している
+  // TODO: mapということは新しい配列を作成してる？itemsHtmlはArray？
+  // joinによって、itemsHtmlは配列じゃなくて文字列になっている
   const itemsHtml = forecastList
     .map(
       (item) => `
