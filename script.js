@@ -9,6 +9,7 @@ weatherBtnElement.addEventListener("click", main);
 // API通信する→404だったらエラー投げる
 // 成功したらオブジェクトのデータを返す
 
+// TODO: これはtryをする意味がないらしい…！！
 async function fetchWeather(locationId) {
   try {
     // fetchしてAPI通信してデータ取得する

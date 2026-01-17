@@ -160,7 +160,8 @@ function isValidNumericInput(value) {
   // 空文字だったらfalse返す
   if (trimmed === "") return false;
   // 0~9の数字か確認する
-  // .test()は文字列の複数の照合を反復処理することができるらしい
+  // .test()は正規表現と指定された文字列を照合するための検索を実行します。
+  // 一致があった場合は true を、それ以外の場合は false を返します。
   return /^[0-9]+$/.test(trimmed);
 }
 
