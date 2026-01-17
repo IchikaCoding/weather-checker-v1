@@ -8,6 +8,8 @@ weatherBtnElement.addEventListener("click", main);
 // main()でオブジェクトを取得するときに使う処理
 // API通信する→404だったらエラー投げる
 // 成功したらオブジェクトのデータを返す
+
+// TODO: return errorは違うらしい！
 async function fetchWeather(locationId) {
   try {
     // fetchしてAPI通信してデータ取得する
@@ -18,6 +20,7 @@ async function fetchWeather(locationId) {
       throw new Error("404エラー！！");
     }
     const dataObj = await res.json();
+    console.log(dataObj);
     return dataObj;
   } catch (error) {
     return error;
@@ -27,16 +30,13 @@ async function fetchWeather(locationId) {
 // 2. メインの処理
 async function main() {
   try {
-    const locationIdElement = document.getElementById("location-id");
-
-    const container = document.getElementById("weather-container");
-    const id = Number(locationIdElement.value);
-    console.log(id);
-    // TODO: この読み込み中は別の関数で実行したほうがいいかも！
-    container.innerHTML = "読み込み中..."; // 待ち時間の演出
-    // TODO: なぜここでawait？awaitしないとundefinedになってしまうから？
-    // 非同期処理で取得したデータを使うなら、全部awaitが必要になるってこと？
+    displayLoading();
+    const id = getId();
+    // console.log(id);
+    // 非同期処理だけのところでawaitが必要
     const data = await fetchWeather(id);
+    // TODO: ここでdataが取得できていなかった場合の処理を書いておく
+
     // 同期処理だからawaitは不要！
     renderWeather(data);
   } catch (error) {
@@ -44,15 +44,30 @@ async function main() {
   }
 }
 
+// TODO: 入力が空のときとかNaNのときに無効なことを伝える処理を追加
+// TODO: IDがinvalidのときはどこでお知らせする？
+function getId() {
+  const locationIdElement = document.getElementById("location-id");
+  // TODO: 最初の0が消えちゃうからNumberにしちゃだめかも？！
+  const id = Number(locationIdElement.value);
+  return id;
+}
+
+// TODO: ローディングアニメーション実装
+function displayLoading() {
+  const container = document.getElementById("weather-container");
+  container.innerHTML = "読み込み中..."; // 待ち時間の演出
+}
+
 // locationIdとして入力されたインプットを加工する処理
 // カンマ区切り→split
 // 余計な空白を削除→trim
-function processData(locationStringId) {
-  locationStringId.split(",");
-}
+// function processData(locationStringId) {
+//   locationStringId.split(",");
+// }
 
 function getThreeDayData(data) {
-  forecastInfoArray = data.forecasts.map((forecast) => {
+  const forecastInfoArray = data.forecasts.map((forecast) => {
     const date = forecast.date ?? "なし";
     const dateLabel = forecast.dateLabel ?? "なし";
     const telop = forecast.telop ?? "なし";
@@ -64,10 +79,14 @@ function getThreeDayData(data) {
 // forecastInfoArrayからデータを一つずつ取得
 // そのデータをforecastsHtmlにまとめる
 // <h2>場所：東京</h2>+forecastsHtmlを返す
+// TODO: 東京以外のときはIDから地名を表示する
 function makeHtmlElement(forecastInfoArray) {
+  // TODO: これをやる前の時点で取得できなかったらエラーになってこの処理が動かない！
   if (forecastInfoArray.length === 0) {
     return `<p>天気予報が取得できませんでした😱</p>`;
   }
+  // mapは新しい配列を返す
+  // joinは配列の全要素を順に連結した新しい文字列を返す
   const forecastHtml = forecastInfoArray
     .map((forecastInfo) => {
       return `<ul>
