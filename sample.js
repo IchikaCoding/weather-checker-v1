@@ -8,7 +8,7 @@ weatherBtnElement.addEventListener("click", main);
 async function fetchWeather(locationId) {
   // TODO:　fetchしてAPI通信してデータ取得する処理を書く
   const data = await fetch(
-    `https://weather.tsukumijima.net/api/forecast/city/${locationIdElement}`
+    `https://weather.tsukumijima.net/api/forecast/city/${locationIdElement}`,
   );
   //   TODO: JSのオブジェクトにしてから返す
   // 0.5秒後にresolve実行（0.5秒待つ処理）
@@ -138,7 +138,7 @@ function renderForecastList(forecastList) {
           <li>日付：${item.date}（${item.dateLabel}）</li>
           <li>天気：${item.telop}</li>
         </ul>
-      `
+      `,
     )
     .join("");
 
@@ -172,3 +172,47 @@ if (isValidNumericInput(input)) {
 } else {
   console.log("無効な入力");
 }
+
+// ーーーーーーーーーーーーーーーーーー
+
+/**
+ * 3日分の降水確率が入っている配列を作成する処理
+ * @param {{forecasts: Array<{chanceOfRain:Object}>}} data API通信で取得したデータ
+ * @returns {Array<Array<string>>} 3日分の降水確率が入っている配列
+ */
+function makeChanceOfRainArray(data) {
+  const result = []; // 3日分を入れる
+  for (let i = 0; i <= 2; i++) {
+    // 1日分の配列を作成
+    const array = [];
+    // インデックスiのときの降水確率を取得
+    const chanceOfRainObj = data.forecasts[i].chanceOfRain;
+    // Object.valuesで、オブジェクトの値だけを抽出した配列を作る
+    for (const value of Object.values(chanceOfRainObj)) {
+      // ここで％を削除しながらarray配列に一つずつ値をプッシュする
+      array.push(value.slice(0, -1));
+    }
+    // 4つ揃ったら1日分として保存
+    result.push(array);
+  }
+  return result;
+}
+
+// 1日分の降水確率の配列が引数
+function calculateChanceOfRain(array) {
+  // arrayは4つの数字文字列が入った配列
+  const noRainArray = array.map((item) => 100 - Number(item));
+  // その日、1日の雨の降らない確率を求める
+  const chanceOfNoRain =
+    (noRainArray[0] / 100) *
+    (noRainArray[1] / 100) *
+    (noRainArray[2] / 100) *
+    (noRainArray[3] / 100);
+  // 1日のうちに雨の降る確率を求めて四捨五入して返す
+  return Math.round((1 - chanceOfNoRain) * 100);
+}
+
+// 使い方イメージ
+const allArrays = makeChanceOfRainArray(data);
+// 全部の配列から、1日分ごとの配列取り出して3日分の1日あたりの降水確率（？）の配列を作成
+const chanceArray = allArrays.map(calculateChanceOfRain);

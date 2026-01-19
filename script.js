@@ -48,7 +48,7 @@ async function main() {
     // 非同期処理だけのところでawaitが必要
     //  checkDataはdataが取得できていなかった場合の処理
     const data = checkData(await fetchWeather(trimmed));
-    calculateChanceOfRain(data);
+    // makeChanceOfRainArray(data);
 
     // 同期処理だからawaitは不要！
     renderWeather(data);
@@ -203,35 +203,74 @@ function renderWeather(data) {
 //   console.log(`${key}: ${value}`);
 // }
 
-function calculateChanceOfRain(data) {
-  // keyが時間帯、valueが降水確率
-  let array = [];
+// TODO: 3日分の配列を返す
+// function makeChanceOfRainArray(data) {
+//   // keyが時間帯、valueが降水確率
+//   for (let i = 0; i <= 2; i++) {
+//     console.log("hello");
+//     // ? 1日分ごとに配列が作成される？
+//     let array = [];
+//     const chanceOfRainObj = data.forecasts[i].chanceOfRain;
+//     for (const [key, value] of Object.entries(chanceOfRainObj)) {
+//       console.log(`${key}: ${value}`);
+//       // %だけ削除した降水確率の配列（文字列）
+//       array.push(value.slice(0, -1));
+//       if (array.length === 4) {
+//         const chanceOfRainArray = array;
+//         console.log(chanceOfRainArray);
+//       }
+//     }
+//   }
+//   // return array;
+// }
+
+/**
+ * 3日分の降水確率の配列を作成する処理
+ * TODO:　配列の値の型も追加しておく
+ * @param {Object} data API通信で取得したデータ一覧
+ * @returns {Array<Array>} 3日分の降水確率の配列
+ */
+
+function makeChanceOfRainArray(data) {
+  // 3日分にする（forループ）
   for (let i = 0; i <= 2; i++) {
-    const chanceOfRainObj = data.forecasts[i].chanceOfRain;
-    for (const [key, value] of Object.entries(chanceOfRainObj)) {
-      // %だけ削除した降水確率の配列（文字列）
-      array.push(value.slice(0, -1));
-      console.log(array);
-      // 雨がどこでも降らない確率（どこでも雨が降らない確率を4つ掛け算して）を求める
-      // インデックス0の値を1から引く
-      // TODO: 文字列がいつのまにか数字になっている？！
-      const noRainArray = array.map((item) => {
-        const result = 100 - item;
-        return result;
-      });
-      console.log(noRainArray);
-      const chanceOfNoRain =
-        (noRainArray[0] / 100) *
-        (noRainArray[1] / 100) *
-        (noRainArray[2] / 100) *
-        (noRainArray[3] / 100);
-      // dailyRainChance は「1日のうちどこかで雨が降るかもしれない確率」だからAPIで取れた降水確率とは違う
-      const dailyRainChance = Math.round((1 - chanceOfNoRain) * 100);
-      console.log(`dailyRainChance:${dailyRainChance}%`);
-
-      console.log(`${key}: ${value}`);
-
-      console.log(chanceOfRainObj);
+    const threeDayArray = [];
+    // 1日分ずつdataのforecastsのchanceOfRainの値を取得する（ループ）
+    // オブジェクトの値を配列にする処理を追加
+    for (const value of Object.values(data.forecasts[0].chanceOfRain)) {
+      const array = [];
+      // valueの％を削除する
+      const chance = value.slice(0, -1);
+      // そのデータで1日分の配列を作成する
+      array.push(chance);
     }
+    // 3日分の配列にする
+    threeDayArray.push(array);
   }
+}
+
+/**
+ *
+ * @param {*} array
+ * @returns
+ */
+function calculateChanceOfRain(array) {
+  // 雨がどこでも降らない確率（どこでも雨が降らない確率を4つ掛け算して）を求める
+  // インデックス0の値を1から引く
+  // TODO: 文字列がいつのまにか数字になっている？！
+  const noRainArray = array.map((item) => {
+    const result = 100 - item;
+    return result;
+  });
+  console.log(noRainArray);
+  const chanceOfNoRain =
+    (noRainArray[0] / 100) *
+    (noRainArray[1] / 100) *
+    (noRainArray[2] / 100) *
+    (noRainArray[3] / 100);
+  // dailyRainChance は「1日のうちどこかで雨が降るかもしれない確率」だからAPIで取れた降水確率とは違う
+  const dailyRainChance = Math.round((1 - chanceOfNoRain) * 100);
+  console.log(`dailyRainChance:${dailyRainChance}%`);
+  console.log(chanceOfRainObj);
+  return dailyRainChance;
 }
