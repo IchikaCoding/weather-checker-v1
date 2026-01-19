@@ -82,7 +82,6 @@ function getId() {
 }
 
 /**
- * TODO:　空白削除などの処理したidはisSixDigitsで使用したい！
  * 値を返してほしい！
  * 入力された数字が有効かどうかを判定する関数
  * @param {string} id
@@ -185,7 +184,54 @@ function renderWeather(data) {
 }
 
 // TODO: 各日の chanceOfRain を取り出す
+// --%のときは無視する
+// function calculateChanceOfRain(data) {
+//   // keyが時間帯、valueが降水確率
+//   for (let i = 0; i <= 2; i++) {
+//     const chanceOfRain = data.forecasts[i].chanceOfRain;
+//     for (const [key, value] of Object.entries(chanceOfRain)) {
+//       console.log(`${key}: ${value}`);
+//       console.log(chanceOfRain);
+//     }
+//   }
+// }
+// 今日の6時～24までの降水確率を調べる→明日と明後日も同じ処理をする
+// そのデータを使用して雨がどこでも降らない確率（どこでも雨が降らない確率を4つ掛け算して）を求める
+// その数を1から引く→どこかで雨が降る確率がわかる
+
+// for (const [key, value] of Object.entries(object)) {
+//   console.log(`${key}: ${value}`);
+// }
+
 function calculateChanceOfRain(data) {
-  const chanceOfRain = data.forecasts[0].chanceOfRain;
-  console.log(chanceOfRain);
+  // keyが時間帯、valueが降水確率
+  let array = [];
+  for (let i = 0; i <= 2; i++) {
+    const chanceOfRainObj = data.forecasts[i].chanceOfRain;
+    for (const [key, value] of Object.entries(chanceOfRainObj)) {
+      // %だけ削除した降水確率の配列（文字列）
+      array.push(value.slice(0, -1));
+      console.log(array);
+      // 雨がどこでも降らない確率（どこでも雨が降らない確率を4つ掛け算して）を求める
+      // インデックス0の値を1から引く
+      // TODO: 文字列がいつのまにか数字になっている？！
+      const noRainArray = array.map((item) => {
+        const result = 100 - item;
+        return result;
+      });
+      console.log(noRainArray);
+      const chanceOfNoRain =
+        (noRainArray[0] / 100) *
+        (noRainArray[1] / 100) *
+        (noRainArray[2] / 100) *
+        (noRainArray[3] / 100);
+      // dailyRainChance は「1日のうちどこかで雨が降るかもしれない確率」だからAPIで取れた降水確率とは違う
+      const dailyRainChance = Math.round((1 - chanceOfNoRain) * 100);
+      console.log(`dailyRainChance:${dailyRainChance}%`);
+
+      console.log(`${key}: ${value}`);
+
+      console.log(chanceOfRainObj);
+    }
+  }
 }
