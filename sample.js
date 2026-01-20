@@ -182,8 +182,10 @@ if (isValidNumericInput(input)) {
  */
 function makeChanceOfRainArray(data) {
   const result = []; // 3日分を入れる
+  // iは更新されるからlet
   for (let i = 0; i <= 2; i++) {
     // 1日分の配列を作成
+    // ここがconst なのは、arrayはpushされるだけで参照の値（？）が変わっているわけじゃないから
     const array = [];
     // インデックスiのときの降水確率を取得
     const chanceOfRainObj = data.forecasts[i].chanceOfRain;
@@ -212,7 +214,27 @@ function calculateChanceOfRain(array) {
   return Math.round((1 - chanceOfNoRain) * 100);
 }
 
-// 使い方イメージ
-const allArrays = makeChanceOfRainArray(data);
-// 全部の配列から、1日分ごとの配列取り出して3日分の1日あたりの降水確率（？）の配列を作成
-const chanceArray = allArrays.map(calculateChanceOfRain);
+// TODO:　関数作る、分割する
+// TODO:　返り値と引数も決める
+/**
+ * 今日・明日・明後日で最も降水確率が高い日を判定する関数
+ * @param {Object} API通信で取得したデータ
+ * @returns {string} 今日・明日・明後日で最も降水確率が高い日を返す
+ */
+function judgeOfRainDay(data) {
+  // 使い方イメージ
+  const allArrays = makeChanceOfRainArray(data);
+  // 全部の配列から、1日分ごとの配列取り出して3日分の1日あたりの降水確率（？）の配列を作成
+  // 1日あたりの雨が降る確率[20,10,40]みたいな形の配列がchanceArray代入される
+  const chanceOfArray = allArrays.map(calculateChanceOfRain);
+
+  // chanceArrayの中から最大値のインデックスを取得
+  // (...)はスプレッド構文
+  const max = Math.max(...chanceOfArray);
+  // そのインデックスから今日・明日・明後日で最も降水確率が高い日を表示する
+  const maxIndex = chanceOfArray.indexOf(max);
+
+  if (maxIndex === 0) "今日";
+  else if (maxIndex === 1) "明日";
+  else "明後日";
+} // allArrays

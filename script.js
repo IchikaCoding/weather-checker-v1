@@ -48,10 +48,10 @@ async function main() {
     // 非同期処理だけのところでawaitが必要
     //  checkDataはdataが取得できていなかった場合の処理
     const data = checkData(await fetchWeather(trimmed));
-    // makeChanceOfRainArray(data);
-
+    console.log(makeChanceOfRainArray(data));
     // 同期処理だからawaitは不要！
     renderWeather(data);
+    judgeOfRainDay(data);
   } catch (error) {
     console.error(error);
     displayError(error);
@@ -230,15 +230,14 @@ function renderWeather(data) {
  * @param {Object} data API通信で取得したデータ一覧
  * @returns {Array<Array>} 3日分の降水確率の配列
  */
-
 function makeChanceOfRainArray(data) {
+  const threeDayArray = [];
   // 3日分にする（forループ）
   for (let i = 0; i <= 2; i++) {
-    const threeDayArray = [];
+    const array = [];
     // 1日分ずつdataのforecastsのchanceOfRainの値を取得する（ループ）
     // オブジェクトの値を配列にする処理を追加
-    for (const value of Object.values(data.forecasts[0].chanceOfRain)) {
-      const array = [];
+    for (const value of Object.values(data.forecasts[i].chanceOfRain)) {
       // valueの％を削除する
       const chance = value.slice(0, -1);
       // そのデータで1日分の配列を作成する
@@ -247,30 +246,87 @@ function makeChanceOfRainArray(data) {
     // 3日分の配列にする
     threeDayArray.push(array);
   }
+  return threeDayArray;
 }
 
 /**
- *
- * @param {*} array
+ * 雨が降る確率（1日バージョン）
+ * @param {*} array makeChanceOfRainArrayの返り値threeDayArrayがわたる
  * @returns
  */
 function calculateChanceOfRain(array) {
+  // TODO:　--のときの値を除外する
   // 雨がどこでも降らない確率（どこでも雨が降らない確率を4つ掛け算して）を求める
   // インデックス0の値を1から引く
-  // TODO: 文字列がいつのまにか数字になっている？！
   const noRainArray = array.map((item) => {
-    const result = 100 - item;
+    const result = 100 - Number(item);
     return result;
   });
   console.log(noRainArray);
-  const chanceOfNoRain =
-    (noRainArray[0] / 100) *
-    (noRainArray[1] / 100) *
-    (noRainArray[2] / 100) *
-    (noRainArray[3] / 100);
+  // TODO: これってどうして100で割るんだっけ？
+  // for (let i = 0; i <= 3; i++) {}
+  // noRainArrayの要素をそれぞれ100で割る（map）→ array
+  // chanceOfNoRain
+  // 合計変数を用意→掛け算を繰り返す
+  // TODO: 外の関数で宣言した変数は内側の関数でも使用できるよね？
+  // TODO: for文ならかけそう。
+  // let total = 1;
+  // const chanceOfNoRain =
+  //   noRainArray.map((item) => {
+  //     const proportion = item / 100;
+  //     total = total * proportion;
+  //     return total;
+  //   })(noRainArray[0] / 100) *
+  //   (noRainArray[1] / 100) *
+  //   (noRainArray[2] / 100) *
+  //   (noRainArray[3] / 100);
+  const chanceOfNoRain = chanceOfNoRainFunc(noRainArray);
   // dailyRainChance は「1日のうちどこかで雨が降るかもしれない確率」だからAPIで取れた降水確率とは違う
   const dailyRainChance = Math.round((1 - chanceOfNoRain) * 100);
   console.log(`dailyRainChance:${dailyRainChance}%`);
-  console.log(chanceOfRainObj);
+  console.log(chanceOfNoRain);
   return dailyRainChance;
 }
+
+//--------------------------------------
+
+function chanceOfNoRainFunc(noRainArray) {
+  // const noRainArray = [10, 20, 30, 40];
+  console.log("chanceOfNoRainFuncが来た！！");
+
+  const initialValue = 1;
+  const chanceOfNoRain = noRainArray.reduce(
+    // initialValue が指定されたらその値。array[0]の値。
+    (accumulator, currentValue) => {
+      return accumulator * (currentValue / 100);
+    },
+    initialValue,
+  );
+
+  console.log(chanceOfNoRain);
+  return chanceOfNoRain;
+}
+
+// TODO:　関数作る、分割する
+// TODO:　返り値と引数も決める
+/**
+ * 今日・明日・明後日で最も降水確率が高い日を判定する関数
+ * @param {Object} API通信で取得したデータ
+ * @returns {string} 今日・明日・明後日で最も降水確率が高い日を返す
+ */
+function judgeOfRainDay(data) {
+  // 使い方イメージ
+  const allArrays = makeChanceOfRainArray(data);
+  // 全部の配列から、1日分ごとの配列取り出して3日分の1日あたりの降水確率（？）の配列を作成
+  // 1日あたりの雨が降る確率[20,10,40]みたいな形の配列がchanceArray代入される
+  const chanceOfArray = allArrays.map(calculateChanceOfRain);
+  console.log(chanceOfArray);
+  // chanceArrayの中から最大値のインデックスを取得
+  // (...)はスプレッド構文
+  const max = Math.max(...chanceOfArray);
+  // そのインデックスから今日・明日・明後日で最も降水確率が高い日を表示する
+  const maxIndex = chanceOfArray.indexOf(max);
+  const message = ["今日", "明日", "明後日"];
+  console.log(message[maxIndex]);
+  return message[maxIndex];
+} // allArrays,chanceOfArray,max,maxIndex,message
