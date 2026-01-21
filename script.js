@@ -239,7 +239,10 @@ function makeChanceOfRainArray(data) {
     // オブジェクトの値を配列にする処理を追加
     for (const value of Object.values(data.forecasts[i].chanceOfRain)) {
       // valueの％を削除する
-      const chance = value.slice(0, -1);
+      let chance = value.slice(0, -1);
+      if (chance === "--") {
+        chance = null;
+      }
       // そのデータで1日分の配列を作成する
       array.push(chance);
     }
@@ -255,12 +258,21 @@ function makeChanceOfRainArray(data) {
  * @returns
  */
 function calculateChanceOfRain(array) {
-  // TODO:　--のときの値を除外する
   // 雨がどこでも降らない確率（どこでも雨が降らない確率を4つ掛け算して）を求める
   // インデックス0の値を1から引く
+
+  // TODO: Number(null)が0になった😭
+  // 計算するときはnullは除外。
+  // noRainArrayの要素数はnullはそのままnullにしておいて変えない。
   const noRainArray = array.map((item) => {
-    const result = 100 - Number(item);
-    return result;
+    // もしnullだったらnullを返す、
+    // 値が入っていたらその値を使って、100から引き算する
+    if (item === null) {
+      return null;
+    } else {
+      const result = 100 - Number(item);
+      return result;
+    }
   });
   console.log(noRainArray);
   // TODO: これってどうして100で割るんだっけ？
@@ -288,8 +300,12 @@ function calculateChanceOfRain(array) {
   return dailyRainChance;
 }
 
-//--------------------------------------
+// TODO:　arrayから--のデータを除外して新しい配列を作成する
+// 引数はarray, 返り値は新しい配列
+function excludeHyphens(array) {}
 
+//--------------------------------------
+// TODO: "--"を1として掛け算で使用したら"--"を除外しないで計算できるかも！
 function chanceOfNoRainFunc(noRainArray) {
   // const noRainArray = [10, 20, 30, 40];
   console.log("chanceOfNoRainFuncが来た！！");
@@ -298,7 +314,8 @@ function chanceOfNoRainFunc(noRainArray) {
   const chanceOfNoRain = noRainArray.reduce(
     // initialValue が指定されたらその値。array[0]の値。
     (accumulator, currentValue) => {
-      return accumulator * (currentValue / 100);
+      const value = currentValue === NaN ? 100 : currentValue;
+      return accumulator * (value / 100);
     },
     initialValue,
   );
