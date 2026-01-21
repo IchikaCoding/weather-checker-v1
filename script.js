@@ -51,7 +51,7 @@ async function main() {
     console.log(makeChanceOfRainArray(data));
     // 同期処理だからawaitは不要！
     renderWeather(data);
-    judgeOfRainDay(data);
+    displayMessage(judgeOfRainDay(data));
   } catch (error) {
     console.error(error);
     displayError(error);
@@ -183,47 +183,6 @@ function renderWeather(data) {
   container.innerHTML = htmlEl;
 }
 
-// TODO: 各日の chanceOfRain を取り出す
-// --%のときは無視する
-// function calculateChanceOfRain(data) {
-//   // keyが時間帯、valueが降水確率
-//   for (let i = 0; i <= 2; i++) {
-//     const chanceOfRain = data.forecasts[i].chanceOfRain;
-//     for (const [key, value] of Object.entries(chanceOfRain)) {
-//       console.log(`${key}: ${value}`);
-//       console.log(chanceOfRain);
-//     }
-//   }
-// }
-// 今日の6時～24までの降水確率を調べる→明日と明後日も同じ処理をする
-// そのデータを使用して雨がどこでも降らない確率（どこでも雨が降らない確率を4つ掛け算して）を求める
-// その数を1から引く→どこかで雨が降る確率がわかる
-
-// for (const [key, value] of Object.entries(object)) {
-//   console.log(`${key}: ${value}`);
-// }
-
-// TODO: 3日分の配列を返す
-// function makeChanceOfRainArray(data) {
-//   // keyが時間帯、valueが降水確率
-//   for (let i = 0; i <= 2; i++) {
-//     console.log("hello");
-//     // ? 1日分ごとに配列が作成される？
-//     let array = [];
-//     const chanceOfRainObj = data.forecasts[i].chanceOfRain;
-//     for (const [key, value] of Object.entries(chanceOfRainObj)) {
-//       console.log(`${key}: ${value}`);
-//       // %だけ削除した降水確率の配列（文字列）
-//       array.push(value.slice(0, -1));
-//       if (array.length === 4) {
-//         const chanceOfRainArray = array;
-//         console.log(chanceOfRainArray);
-//       }
-//     }
-//   }
-//   // return array;
-// }
-
 /**
  * 3日分の降水確率の配列を作成する処理
  * TODO:　配列の値の型も追加しておく
@@ -282,16 +241,7 @@ function calculateChanceOfRain(array) {
   // 合計変数を用意→掛け算を繰り返す
   // TODO: 外の関数で宣言した変数は内側の関数でも使用できるよね？
   // TODO: for文ならかけそう。
-  // let total = 1;
-  // const chanceOfNoRain =
-  //   noRainArray.map((item) => {
-  //     const proportion = item / 100;
-  //     total = total * proportion;
-  //     return total;
-  //   })(noRainArray[0] / 100) *
-  //   (noRainArray[1] / 100) *
-  //   (noRainArray[2] / 100) *
-  //   (noRainArray[3] / 100);
+
   const chanceOfNoRain = chanceOfNoRainFunc(noRainArray);
   // dailyRainChance は「1日のうちどこかで雨が降るかもしれない確率」だからAPIで取れた降水確率とは違う
   const dailyRainChance = Math.round((1 - chanceOfNoRain) * 100);
@@ -305,7 +255,7 @@ function calculateChanceOfRain(array) {
 function excludeHyphens(array) {}
 
 //--------------------------------------
-// TODO: "--"を1として掛け算で使用したら"--"を除外しないで計算できるかも！
+// TODO: "--"はnullなので、100として掛け算して結果に影響させないようにした。
 function chanceOfNoRainFunc(noRainArray) {
   // const noRainArray = [10, 20, 30, 40];
   console.log("chanceOfNoRainFuncが来た！！");
@@ -314,7 +264,7 @@ function chanceOfNoRainFunc(noRainArray) {
   const chanceOfNoRain = noRainArray.reduce(
     // initialValue が指定されたらその値。array[0]の値。
     (accumulator, currentValue) => {
-      const value = currentValue === NaN ? 100 : currentValue;
+      const value = currentValue === null ? 100 : currentValue;
       return accumulator * (value / 100);
     },
     initialValue,
@@ -343,7 +293,15 @@ function judgeOfRainDay(data) {
   const max = Math.max(...chanceOfArray);
   // そのインデックスから今日・明日・明後日で最も降水確率が高い日を表示する
   const maxIndex = chanceOfArray.indexOf(max);
-  const message = ["今日", "明日", "明後日"];
-  console.log(message[maxIndex]);
-  return message[maxIndex];
+  const dateLabels = ["今日", "明日", "明後日"];
+  console.log(dateLabels[maxIndex]);
+  return { maxChanceOfRain: max, dateLabel: dateLabels[maxIndex] };
 } // allArrays,chanceOfArray,max,maxIndex,message
+
+// 画面に降水確率が最も高い日を表示する処理
+// 引数はjudgeOfRainDay(data)の返り値
+function displayMessage({ maxChanceOfRain, dateLabel }) {
+  console.log(maxChanceOfRain, dateLabel);
+  const rainMessageElement = document.getElementById("rain-message");
+  rainMessageElement.textContent = `${dateLabel} : ${maxChanceOfRain}%の降水確率。`;
+}
