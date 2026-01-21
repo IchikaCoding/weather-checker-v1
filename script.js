@@ -48,7 +48,7 @@ async function main() {
     // 非同期処理だけのところでawaitが必要
     //  checkDataはdataが取得できていなかった場合の処理
     const data = checkData(await fetchWeather(trimmed));
-    console.log(makeChanceOfRainArray(data));
+    console.log(makeThreeDayChanceOfRainArray(data));
     // 同期処理だからawaitは不要！
     renderWeather(data);
     displayMessage(judgeOfRainDay(data));
@@ -74,6 +74,7 @@ function checkData(data) {
   return data;
 }
 
+// TODO: ここからJSDocを追加していく
 function getId() {
   const locationIdElement = document.getElementById("location-id");
   return locationIdElement.value;
@@ -82,7 +83,6 @@ function getId() {
 }
 
 /**
- * 値を返してほしい！
  * 入力された数字が有効かどうかを判定する関数
  * @param {string} id
  * @returns {boolean}
@@ -94,6 +94,11 @@ function isValidNumericInput(id) {
   return /^[0-9]+$/.test(id);
 }
 
+/**
+ * 前後のスペースを削除する処理
+ * @param {string} id
+ * @returns {string} trimmed
+ */
 function trimId(id) {
   const trimmed = id.trim();
   return trimmed;
@@ -127,9 +132,9 @@ function displayLoading() {
 //   locationStringId.split(",");
 // }
 /**
- * TODO: JSDocを書き換える
- * @param {object} data
- * @returns {{city: string, forecastInfoArray: Array}}
+ * 今日・明日・明後日の天気予報のデータを取得する処理
+ * @param {Object} data API通信で取得したデータ
+ * @returns {{city: string, forecastInfoArray: Array}} 都市名と天気予報のデータを返す
  */
 function getThreeDayData(data) {
   const forecastInfoArray = data.forecasts.map((forecast) => {
@@ -143,16 +148,18 @@ function getThreeDayData(data) {
   // 返すときはオブジェクトの省略記法となり、受け取るときなら分割代入！
   return { city, forecastInfoArray };
 }
+
 // forecastInfoArrayから、HTML要素を作成する
 // forecastInfoArrayからデータを一つずつ取得
 // そのデータをforecastsHtmlにまとめる
 // <h2>場所：東京</h2>+forecastsHtmlを返す
 
+/**
+ * 天気予報のデータからHTMLの要素を作成する処理
+ * @param {Object} dataObj
+ * @returns {string} HTMLの要素をテンプレートリテラルで作成して返す
+ */
 function makeHtmlElement(dataObj) {
-  // // TODO: これをやる前の時点で取得できなかったらエラーになってこの処理が動かない！
-  // if (dataObj.forecastInfoArray.length === 0) {
-  //   return `<p>天気予報が取得できませんでした😱</p>`;
-  // }
   // mapは新しい配列を返す
   // joinは配列の全要素を順に連結した新しい文字列を返す
   const forecastHtml = dataObj.forecastInfoArray
@@ -185,11 +192,10 @@ function renderWeather(data) {
 
 /**
  * 3日分の降水確率の配列を作成する処理
- * TODO:　配列の値の型も追加しておく
  * @param {Object} data API通信で取得したデータ一覧
  * @returns {Array<Array>} 3日分の降水確率の配列
  */
-function makeChanceOfRainArray(data) {
+function makeThreeDayChanceOfRainArray(data) {
   const threeDayArray = [];
   // 3日分にする（forループ）
   for (let i = 0; i <= 2; i++) {
@@ -212,15 +218,13 @@ function makeChanceOfRainArray(data) {
 }
 
 /**
- * 雨が降る確率（1日バージョン）
- * @param {*} array makeChanceOfRainArrayの返り値threeDayArrayがわたる
- * @returns
+ * 雨が降る確率（1日バージョン）を算出する処理
+ * @param {Array<Array>} array makeChanceOfRainArrayの返り値threeDayArrayがわたる
+ * @returns {number} dailyRainChance 一日のうちのどこかで雨が降る確率
  */
 function calculateChanceOfRain(array) {
   // 雨がどこでも降らない確率（どこでも雨が降らない確率を4つ掛け算して）を求める
-  // インデックス0の値を1から引く
 
-  // TODO: Number(null)が0になった😭
   // 計算するときはnullは除外。
   // noRainArrayの要素数はnullはそのままnullにしておいて変えない。
   const noRainArray = array.map((item) => {
@@ -234,13 +238,11 @@ function calculateChanceOfRain(array) {
     }
   });
   console.log(noRainArray);
-  // TODO: これってどうして100で割るんだっけ？
+
   // for (let i = 0; i <= 3; i++) {}
   // noRainArrayの要素をそれぞれ100で割る（map）→ array
   // chanceOfNoRain
   // 合計変数を用意→掛け算を繰り返す
-  // TODO: 外の関数で宣言した変数は内側の関数でも使用できるよね？
-  // TODO: for文ならかけそう。
 
   const chanceOfNoRain = chanceOfNoRainFunc(noRainArray);
   // dailyRainChance は「1日のうちどこかで雨が降るかもしれない確率」だからAPIで取れた降水確率とは違う
@@ -250,12 +252,14 @@ function calculateChanceOfRain(array) {
   return dailyRainChance;
 }
 
-// TODO:　arrayから--のデータを除外して新しい配列を作成する
-// 引数はarray, 返り値は新しい配列
-function excludeHyphens(array) {}
-
 //--------------------------------------
-// TODO: "--"はnullなので、100として掛け算して結果に影響させないようにした。
+// "--"はnullなので、100として掛け算して結果に影響させないようにした。
+/**
+ * 雨が降らない確率を算出する処理
+ * ! 返り値が分かりづらいから要注意！
+ * @param {Array<number>} noRainArray
+ * @returns {Number} chanceOfNoRain 一日のうちのどこかでも雨が降らない確率
+ */
 function chanceOfNoRainFunc(noRainArray) {
   // const noRainArray = [10, 20, 30, 40];
   console.log("chanceOfNoRainFuncが来た！！");
@@ -275,18 +279,19 @@ function chanceOfNoRainFunc(noRainArray) {
 }
 
 // TODO:　関数作る、分割する
-// TODO:　返り値と引数も決める
 /**
  * 今日・明日・明後日で最も降水確率が高い日を判定する関数
  * @param {Object} API通信で取得したデータ
- * @returns {string} 今日・明日・明後日で最も降水確率が高い日を返す
+ * @returns {Object{maxChanceOfRain: Number, dateLabel: string}} 今日・明日・明後日で最も降水確率が高い日を返す
  */
 function judgeOfRainDay(data) {
   // 使い方イメージ
-  const allArrays = makeChanceOfRainArray(data);
+  const allArrays = makeThreeDayChanceOfRainArray(data);
   // 全部の配列から、1日分ごとの配列取り出して3日分の1日あたりの降水確率（？）の配列を作成
   // 1日あたりの雨が降る確率[20,10,40]みたいな形の配列がchanceArray代入される
-  const chanceOfArray = allArrays.map(calculateChanceOfRain);
+  const chanceOfArray = allArrays.map((array) => {
+    calculateChanceOfRain(array);
+  });
   console.log(chanceOfArray);
   // chanceArrayの中から最大値のインデックスを取得
   // (...)はスプレッド構文
@@ -295,13 +300,25 @@ function judgeOfRainDay(data) {
   const maxIndex = chanceOfArray.indexOf(max);
   const dateLabels = ["今日", "明日", "明後日"];
   console.log(dateLabels[maxIndex]);
-  return { maxChanceOfRain: max, dateLabel: dateLabels[maxIndex] };
+  return { dateLabel: dateLabels[maxIndex], maxChanceOfRain: max };
 } // allArrays,chanceOfArray,max,maxIndex,message
 
 // 画面に降水確率が最も高い日を表示する処理
 // 引数はjudgeOfRainDay(data)の返り値
-function displayMessage({ maxChanceOfRain, dateLabel }) {
+function displayMessage({ dateLabel, maxChanceOfRain }) {
   console.log(maxChanceOfRain, dateLabel);
   const rainMessageElement = document.getElementById("rain-message");
-  rainMessageElement.textContent = `${dateLabel} : ${maxChanceOfRain}%の降水確率。`;
+  // もし70%以上だったら傘忘れずに
+  // 40％以上なら
+  // 変数を作成したら初期値をいれることは徹底しよう！
+  let message = "";
+  if (maxChanceOfRain >= 70) {
+    message = "傘を忘れずに☔";
+  } else if (maxChanceOfRain >= 40) {
+    message =
+      "折りたたみ傘があると安心（風が吹いたら傘が反対向きにはなるかも🥺）";
+  } else {
+    message = "傘は不要だよん♪";
+  }
+  rainMessageElement.textContent = `${dateLabel} : ${maxChanceOfRain}%の降水確率。${message}`;
 }
