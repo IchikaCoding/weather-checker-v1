@@ -298,13 +298,19 @@ function chanceOfNoRainFunc(noRainArray) {
  * @returns {Object{maxChanceOfRain: Number, dateLabel: string}} 今日・明日・明後日で最も降水確率が高い日を返す
  */
 function judgeOfRainDay(data) {
+  console.log("API通信で取得したデータ", data);
   // 使い方イメージ
   const allArrays = makeThreeDayChanceOfRainArray(data);
+  console.log({ allArrays });
   // 全部の配列から、1日分ごとの配列取り出して3日分の1日あたりの降水確率（？）の配列を作成
   // 1日あたりの雨が降る確率[20,10,40]みたいな形の配列がchanceArray代入される
+
   const chanceOfArray = allArrays.map((array) => {
-    calculateChanceOfRain(array);
+    return calculateChanceOfRain(array);
   });
+  // ! mapなら自動的に引数が渡されるし、結果もリターンされるから以下の書き方でもOK！
+  // const chanceOfArray = allArrays.map(calculateChanceOfRain);
+
   console.log(chanceOfArray);
   // chanceArrayの中から最大値のインデックスを取得
   // (...)はスプレッド構文
