@@ -135,7 +135,7 @@ const isSixDigits = (id) => {
 // TODO: ローディングアニメーション実装
 function displayLoading() {
   const container = document.getElementById("weather-container");
-  container.innerHTML = "読み込み中..."; // 待ち時間の演出
+  container.textContent = "読み込み中..."; // 待ち時間の演出
 }
 
 // locationIdとして入力されたインプットを加工する処理
@@ -187,12 +187,45 @@ function makeHtmlElement(dataObj) {
     .join("");
   return `<h2>場所：${dataObj.city}</h2>${forecastHtml}`;
 }
+// TODO: 　ここからやる
+// タグを作成：ulとli2つ
+// 文字を挿入1：li 1つ目に「日付：${forecastInfo.date}（${forecastInfo.dateLabel}）」
+// 文字を挿入2：li 2つ目に「天気：${forecastInfo.telop}」
+// ulにliを入れる：
+/**
+ * 天気予報のデータからHTMLの要素を作成する処理
+ * @param {Object} forecastInfoObj
+ * @returns {Array} HTMLの要素に入れて画面表示するための文字たち
+ */
+function makeForecastArray(forecastInfoObj) {
+  // mapは新しい配列を返す
+  // joinは配列の全要素を順に連結した新しい文字列を返す
+
+  const forecastMessageArray = forecastInfoObj.forecastInfoArray.map(
+    (forecastInfo) => {
+      const messageForNewLi1 = `日付：${forecastInfo.date}（${forecastInfo.dateLabel}）`;
+      const messageForNewLi2 = `天気：${forecastInfo.telop}`;
+      return {
+        messageForNewLi1: messageForNewLi1,
+        messageForNewLi2: messageForNewLi2,
+      };
+    },
+  );
+  return forecastMessageArray;
+}
+
+// TODO: インデックス番号とプロパティを指定して、textContentに入れ込む処理を書く！
+// インデックス番号とプロパティを指定して、textContentに入れ込む。
+function displayForecastInfo() {}
 
 // 表示する関数
 // コンテナを用意する
 // 取得したデータをもらって、その天気予報のプロパティから一部のデータをコンテナに追加する
 // この処理は、mainで非同期で実行する
-
+/**
+ * 取得した天気予報を画面に表示する関数
+ * @param {Object} data
+ */
 function renderWeather(data) {
   // console.log(data);
   const container = document.getElementById("weather-container");
@@ -200,6 +233,8 @@ function renderWeather(data) {
   const forecastInfoObj = getThreeDayData(data);
   // そのデータを使ってHTMLの要素たちを取得する
   const htmlEl = makeHtmlElement(forecastInfoObj);
+  console.log(makeForecastArray(forecastInfoObj));
+  // TODO: ここはappendChildに修正する
   container.innerHTML = htmlEl;
 }
 

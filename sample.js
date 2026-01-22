@@ -238,3 +238,39 @@ function judgeOfRainDay(data) {
   else if (maxIndex === 1) "明日";
   else "明後日";
 } // allArrays
+
+// --------------------------------------------
+
+// TODO: 　ここからやる
+// タグを作成：ulとli2つ
+// 文字を挿入1：li 1つ目に「日付：${forecastInfo.date}（${forecastInfo.dateLabel}）」
+// 文字を挿入2：li 2つ目に「天気：${forecastInfo.telop}」
+// ulにliを入れる：
+/**
+ * 天気予報のデータからHTMLの要素を作成する処理
+ * @param {Object} forecastInfoObj
+ * @returns {Array} HTMLの要素に入れて画面表示するための文字たち
+ */
+function makeForecastArray(forecastInfoObj) {
+  // mapは新しい配列を返す
+  // joinは配列の全要素を順に連結した新しい文字列を返す
+
+  const forecastMessageArray = forecastInfoObj.forecastInfoArray.map(
+    (forecastInfo) => {
+      const messageForNewLi1 = `日付：${forecastInfo.date}（${forecastInfo.dateLabel}）`;
+      const messageForNewLi2 = `天気：${forecastInfo.telop}`;
+      return {
+        messageForNewLi1: messageForNewLi1,
+        messageForNewLi2: messageForNewLi2,
+      };
+    },
+  );
+  return forecastMessageArray;
+}
+
+const newH2 = document.createElement("h2");
+newH2.textContent = `場所：${dataObj.city}`;
+
+const newUl = document.createElement("ul");
+const newLi1 = document.createElement("li");
+const newLi2 = document.createElement("li");
