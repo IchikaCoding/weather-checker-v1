@@ -318,6 +318,10 @@ function judgeOfRainDay(data) {
 
 // 画面に降水確率が最も高い日を表示する処理
 // 引数はjudgeOfRainDay(data)の返り値
+/**
+ * 一日のうちどこかで雨が降る確率を取得して、その確率に応じたメッセージを表示する関数
+ * @param {Object{dateLabel: string, maxChanceOfRain: number}} {dateLabel, maxChanceOfRain} judgeOfRainDay()で取得した「降水確率と日付のラベル」
+ */
 function displayMessage({ dateLabel, maxChanceOfRain }) {
   console.log(maxChanceOfRain, dateLabel);
   const rainMessageElement = document.getElementById("rain-message");
@@ -336,9 +340,13 @@ function displayMessage({ dateLabel, maxChanceOfRain }) {
   rainMessageElement.textContent = `${dateLabel} : ${maxChanceOfRain}%の降水確率。${message}`;
 }
 
+/**
+ * 一日のうちどこかで雨が降る確率を表示する処理
+ */
 function displayTitle() {
   const titleChanceOfRainElement = document.getElementById(
     "title-chance-of-rain",
   );
-  titleChanceOfRainElement.textContent = "最も降水確率が高い日は・・・";
+  titleChanceOfRainElement.textContent =
+    "一日のうちどこかで雨が降る確率は、、？";
 }
