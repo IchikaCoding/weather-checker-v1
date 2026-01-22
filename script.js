@@ -1,14 +1,18 @@
-const weatherBtnElement = document.getElementById("weather-btn");
+/**
+ * ボタンを押したらmain()が実行される即時実行関数
+ */
+(() => {
+  const weatherBtnElement = document.getElementById("weather-btn");
+  // weatherBtnElementがなかった場合のガード
+  if (!weatherBtnElement) return;
+  weatherBtnElement.addEventListener("click", main);
+})();
 
-weatherBtnElement.addEventListener("click", main);
-
-// JS：動きを作るところ
-
-// 1. 勉強用のダミーAPI関数（サーバーからデータを取ってくるフリをする）
-// main()でオブジェクトを取得するときに使う処理
-// API通信する→404だったらエラー投げる
-// 成功したらオブジェクトのデータを返す
-
+/**
+ * API通信をして、天気予報のデータをJSオブジェクトとして取得する処理
+ * @param {string} locationId 場所のID
+ * @returns {Object} dataObj APIで取得したデータのJSのオブジェクト
+ */
 async function fetchWeather(locationId) {
   // fetchしてAPI通信してデータ取得する
   // URLはテキストだからlocationIdは文字列のままでOK
@@ -23,7 +27,9 @@ async function fetchWeather(locationId) {
   return dataObj;
 }
 
-// 2. メインの処理
+/**
+ * メインの処理
+ */
 async function main() {
   try {
     displayLoading();
@@ -51,21 +57,27 @@ async function main() {
     console.log(makeThreeDayChanceOfRainArray(data));
     // 同期処理だからawaitは不要！
     renderWeather(data);
+    displayTitle();
     displayMessage(judgeOfRainDay(data));
   } catch (error) {
     console.error(error);
     displayError(error);
   }
 }
-// TODO: これをやる前の時点で取得できなかったらエラーになってこの処理が動かない！
+/**
+ * main()で発生したエラーを表示する処理
+ * @param {Error} error main()で発生したエラー
+ */
 function displayError(error) {
   const container = document.getElementById("weather-container");
   container.innerHTML = `<h2>天気予報が取得できませんでした😱</h2><p>${error.message}</p>`;
 }
 
-// 失敗したときの説明と中断の処理が必要
-// fetchでの失敗は何があるか？
-// エラーを返す処理を書きたい
+/**
+ * APIのデータを取得できたかどうかを確認する処理
+ * @param {Object} data API通信で取得したデータ
+ * @returns {Object} data API通信で取得したデータ
+ */
 function checkData(data) {
   console.log("checkData動いた🐣");
   if (data === null || data === undefined) {
@@ -74,12 +86,13 @@ function checkData(data) {
   return data;
 }
 
-// TODO: ここからJSDocを追加していく
+/**
+ * 入力されたIDを取得する処理
+ * @returns {string} idを文字列で返す
+ */
 function getId() {
   const locationIdElement = document.getElementById("location-id");
   return locationIdElement.value;
-  // 空かチェック
-  // 数字に変換してNaNかチェック
 }
 
 /**
@@ -321,4 +334,11 @@ function displayMessage({ dateLabel, maxChanceOfRain }) {
     message = "傘は不要だよん♪";
   }
   rainMessageElement.textContent = `${dateLabel} : ${maxChanceOfRain}%の降水確率。${message}`;
+}
+
+function displayTitle() {
+  const titleChanceOfRainElement = document.getElementById(
+    "title-chance-of-rain",
+  );
+  titleChanceOfRainElement.textContent = "最も降水確率が高い日は・・・";
 }
