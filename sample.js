@@ -268,9 +268,57 @@ function makeForecastArray(forecastInfoObj) {
   return forecastMessageArray;
 }
 
-const newH2 = document.createElement("h2");
-newH2.textContent = `場所：${dataObj.city}`;
+// const newH2 = document.createElement("h2");
+// newH2.textContent = `場所：${dataObj.city}`;
 
-const newUl = document.createElement("ul");
-const newLi1 = document.createElement("li");
-const newLi2 = document.createElement("li");
+// const newUl = document.createElement("ul");
+// const newLi1 = document.createElement("li");
+// const newLi2 = document.createElement("li");
+
+// TODO: インデックス番号とプロパティを指定して、ulとliのセットを作成して返す！
+// インデックス番号とプロパティを指定して、textContentに入れ込む。
+function displayForecastInfo(forecastMessageArray) {
+  // タグを作成：ulとli2つ
+  const newUl = document.createElement("ul");
+  const newLi1 = document.createElement("li");
+  // const newLi2 = document.createElement("li");
+  for (let i = 0; i < forecastMessageArray.length; i++) {
+    // 文字を挿入1：li 1つ目に「日付：${forecastInfo.date}（${forecastInfo.dateLabel}）」
+    const newLi1Message = forecastMessageArray[i].messageForNewLi1;
+    // 文字を挿入2：li 2つ目に「天気：${forecastInfo.telop}」
+    const newLi2Message = forecastMessageArray[i].messageForNewLi2;
+    const dailyMessage = newLi1Message + newLi2Message;
+    console.log(dailyMessage);
+    newLi1.textContent(dailyMessage);
+    // ulにliを入れる：
+    newUl.appendChild(newLi1);
+    // newUl.appendChild(newLi2);
+  }
+
+  return newUl;
+}
+
+// ーーーーーーーーーーーーーーーーーーーー
+// 見本コード
+function renderWeather(data) {
+  // コンテナのHTML要素を取得
+  const container = document.getElementById("weather-container");
+
+  // 1) 読み込み中を消す（まるごと消す）
+  container.textContent = "";
+
+  // 2) 3日分の天気を表示
+  data.forecasts.forEach((forecast) => {
+    const ul = document.createElement("ul");
+    const li1 = document.createElement("li");
+    const li2 = document.createElement("li");
+
+    // 日付と天気を1つのliにまとめる（2つに分けてもOK）
+    li1.textContent = `日付：${forecast.date}（${forecast.dateLabel}）`;
+    li2.textContent = `天気：${forecast.telop}`;
+
+    ul.appendChild(li1);
+    ul.appendChild(li2);
+    container.appendChild(ul);
+  });
+}

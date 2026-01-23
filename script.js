@@ -214,9 +214,50 @@ function makeForecastArray(forecastInfoObj) {
   return forecastMessageArray;
 }
 
-// TODO: インデックス番号とプロパティを指定して、textContentに入れ込む処理を書く！
+// // TODO: インデックス番号とプロパティを指定して、ulとliのセットを作成して返す！
+// // インデックス番号とプロパティを指定して、textContentに入れ込む。
+// function displayForecastInfo(forecastMessageArray) {
+//   // タグを作成：ulとli2つ
+//   const newUl = document.createElement("ul");
+//   const newLi1 = document.createElement("li");
+//   const newLi2 = document.createElement("li");
+//   for (let i = 0; i < forecastMessageArray.length; i++) {
+//     // 文字を挿入1：li 1つ目に「日付：${forecastInfo.date}（${forecastInfo.dateLabel}）」
+//     const newLi1Message = forecastMessageArray[i].messageForNewLi1;
+//     // 文字を挿入2：li 2つ目に「天気：${forecastInfo.telop}」
+//     const newLi2Message = forecastMessageArray[i].messageForNewLi2;
+//     console.log(newLi1Message);
+//     console.log(newLi2Message);
+//     // ulにliを入れる：
+//     newUl.appendChild(newLi1);
+//     newUl.appendChild(newLi2);
+//   }
+
+//   return newUl;
+// }
+
+// TODO: インデックス番号とプロパティを指定して、ulとliのセットを作成して返す！
 // インデックス番号とプロパティを指定して、textContentに入れ込む。
-function displayForecastInfo() {}
+function displayForecastInfo(forecastMessageArray) {
+  // タグを作成：ulとli2つ
+  const newUl = document.createElement("ul");
+  const newLi1 = document.createElement("li");
+  // const newLi2 = document.createElement("li");
+  for (let i = 0; i < forecastMessageArray.length; i++) {
+    // 文字を挿入1：li 1つ目に「日付：${forecastInfo.date}（${forecastInfo.dateLabel}）」
+    const newLi1Message = forecastMessageArray[i].messageForNewLi1;
+    // 文字を挿入2：li 2つ目に「天気：${forecastInfo.telop}」
+    const newLi2Message = forecastMessageArray[i].messageForNewLi2;
+    const dailyMessage = newLi1Message + newLi2Message;
+    console.log(dailyMessage);
+    newLi1.textContent = dailyMessage;
+    // ulにliを入れる：
+    newUl.appendChild(newLi1);
+    // newUl.appendChild(newLi2);
+  }
+
+  return newUl;
+}
 
 // 表示する関数
 // コンテナを用意する
@@ -226,16 +267,44 @@ function displayForecastInfo() {}
  * 取得した天気予報を画面に表示する関数
  * @param {Object} data
  */
+// function renderWeather(data) {
+//   // console.log(data);
+//   const container = document.getElementById("weather-container");
+//   // threeDayData(data)から必要なデータだけ取得する
+//   const forecastInfoObj = getThreeDayData(data);
+//   // そのデータを使ってHTMLの要素たちを取得する
+//   // const htmlEl = makeHtmlElement(forecastInfoObj);
+//   console.log(makeForecastArray(forecastInfoObj));
+//   const ulElement = displayForecastInfo(makeForecastArray(forecastInfoObj));
+//   console.log(ulElement);
+//   // TODO: ここはappendChildに修正する
+//   // container.innerHTML = htmlEl;
+//   container.appendChild(ulElement);
+// }
+
+// 見本コード
 function renderWeather(data) {
-  // console.log(data);
+  // コンテナのHTML要素を取得
   const container = document.getElementById("weather-container");
-  // threeDayData(data)から必要なデータだけ取得する
-  const forecastInfoObj = getThreeDayData(data);
-  // そのデータを使ってHTMLの要素たちを取得する
-  const htmlEl = makeHtmlElement(forecastInfoObj);
-  console.log(makeForecastArray(forecastInfoObj));
-  // TODO: ここはappendChildに修正する
-  container.innerHTML = htmlEl;
+
+  // 1) 読み込み中を消す（まるごと消す）
+  container.textContent = "";
+
+  // 2) 3日分の天気を表示
+  // forEach()は与えられた関数を、配列の各要素に対して一度ずつ実行できる
+  data.forecasts.forEach((forecast) => {
+    const ul = document.createElement("ul");
+    const li1 = document.createElement("li");
+    const li2 = document.createElement("li");
+
+    // 日付と天気を1つのliにまとめる（2つに分けてもOK）
+    li1.textContent = `日付：${forecast.date}（${forecast.dateLabel}）`;
+    li2.textContent = `天気：${forecast.telop}`;
+
+    ul.appendChild(li1);
+    ul.appendChild(li2);
+    container.appendChild(ul);
+  });
 }
 
 /**
