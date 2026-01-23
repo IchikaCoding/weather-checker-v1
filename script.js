@@ -67,6 +67,7 @@ async function main() {
 }
 /**
  * 画面の表示をリセットする処理
+ * TODO: classを作っておくと楽かな？
  */
 function clearDisplay() {
   const container = document.getElementById("weather-container");
