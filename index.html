@@ -8,12 +8,20 @@
   </head>
   <body>
     <h1>お天気チェッカー</h1>
-    <!-- TODO: 1つしか入力しないならnumberに変えたほうが良いかも！ -->
-    <input type="text" id="location-id" />
+    <!-- pattern="\d{6}"で0~9までの数字かどうかを6回繰り返しチェックする -->
+    <!-- maxlength="6"で、6桁しか入力できないようになった。 -->
+    <!-- inputmode="numeric"でスマホで数字キーボードが出やすくなる -->
+    <input
+      type="text"
+      id="location-id"
+      inputmode="numeric"
+      pattern="\d{6}"
+      maxlength="6"
+    />
     <button id="weather-btn">天気を取得する</button>
     <div id="weather-container"></div>
-    <div></div>
-    <div>
+    <!-- <div></div> -->
+    <div id="rain-info">
       <h2 id="title-chance-of-rain"></h2>
       <p id="rain-message"></p>
     </div>
