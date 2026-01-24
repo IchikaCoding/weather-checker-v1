@@ -55,12 +55,14 @@ async function main() {
     //  checkDataはdataが取得できていなかった場合の処理
     const data = checkData(await fetchWeather(trimmed));
     console.log(makeThreeDayChanceOfRainArray(data));
+    clearLoading();
     // 同期処理だからawaitは不要！
     renderWeather(data);
     displayTitle();
     displayMessage(judgeOfRainDay(data));
   } catch (error) {
     clearDisplay();
+    clearLoading();
     console.error(error);
     displayError(error);
   }
@@ -74,8 +76,14 @@ function clearDisplay() {
   const rainInfo = document.getElementById("rain-info");
   container.textContent = "";
   rainInfo.textContent = "";
-  console.log("Hello");
 }
+
+// ローディングのアニメーションを削除する関数
+function clearLoading() {
+  const spinnerBorder = document.querySelector(".spinner-border");
+  spinnerBorder.hidden = true;
+}
+
 /**
  * main()で発生したエラーを表示する処理
  * @param {Error} error main()で発生したエラー
@@ -142,7 +150,10 @@ function trimId(id) {
 // TODO: ローディングアニメーション実装
 function displayLoading() {
   const container = document.getElementById("weather-container");
-  container.textContent = "読み込み中..."; // 待ち時間の演出
+  const spinnerBorder = document.querySelector(".spinner-border");
+  spinnerBorder.hidden = false;
+  // container.classList = "d-flex justify-content-center";
+  // container.textContent = "Loading..."; // 待ち時間の演出
 }
 
 // 表示する関数
@@ -158,7 +169,6 @@ function renderWeather(data) {
   // コンテナのHTML要素を取得
   const container = document.getElementById("weather-container");
   // 1) 読み込み中を消す（まるごと消す）
-  container.textContent = "";
   const titleElement = document.createElement("h2");
 
   titleElement.textContent = `${data.location.city}の天気`;
