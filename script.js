@@ -138,11 +138,11 @@ function checkData(data) {
   if (!Array.isArray(data.forecasts)) {
     throw new Error("天気予報のデータ（forecasts）が配列ではありませんでした");
   }
+  // forecasts の長さチェック
   if (data.forecasts.length < 3) {
-    // TODO: forecasts の長さチェック
     throw new Error("取得したデータが足りませんでした");
   }
-  // TODO: chanceOfRain の有無チェック
+  // chanceOfRain の有無チェック
   // 配列の長さ分繰り返す
   for (let i = 0; i < data.forecasts.length; i++) {
     if (
