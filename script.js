@@ -38,6 +38,7 @@ async function fetchWeather(locationId) {
 async function main() {
   try {
     displayLoading();
+    // IDのチェック
     const id = getId();
     const trimmed = trimId(id);
     //  id が取得できなかったときの処理を追加
@@ -51,7 +52,6 @@ async function main() {
       }
       return false;
     };
-
     if (!isSixDigits(trimmed)) {
       throw new Error("無効なIDです！");
     }
@@ -131,6 +131,26 @@ function checkData(data) {
   console.log("checkData動いた🐣");
   if (data === null || data === undefined) {
     throw new Error("データが取得できませんでした");
+  }
+  if (!data.forecasts) {
+    throw new Error("天気予報のforecastsが見つかりませんでした");
+  }
+  if (!Array.isArray(data.forecasts)) {
+    throw new Error("天気予報のデータ（forecasts）が配列ではありませんでした");
+  }
+  if (data.forecasts.length < 3) {
+    // TODO: forecasts の長さチェック
+    throw new Error("取得したデータが足りませんでした");
+  }
+  // TODO: chanceOfRain の有無チェック
+  // 配列の長さ分繰り返す
+  for (let i = 0; i < data.forecasts.length; i++) {
+    if (
+      data.forecasts[i].chanceOfRain === null ||
+      data.forecasts[i].chanceOfRain === undefined
+    ) {
+      throw new Error("降水確率のデータがありませんでした");
+    }
   }
   return data;
 }
