@@ -97,7 +97,8 @@ function clearDisplay() {
 // ローディングのアニメーションを削除する関数
 function clearLoading() {
   const spinnerBorder = document.querySelector(".spinner-border");
-  spinnerBorder.classList.add("d-none");
+  // spinnerBorder.classList.add("d-none");
+  spinnerBorder.hidden = true;
 }
 
 /**
@@ -167,9 +168,9 @@ function trimId(id) {
 
 // TODO: ローディングアニメーション実装
 function displayLoading() {
-  const container = document.getElementById("weather-container");
   const spinnerBorder = document.querySelector(".spinner-border");
-  spinnerBorder.classList.remove("d-none");
+  // spinnerBorder.classList.remove("d-none");
+  spinnerBorder.hidden = false;
   // container.classList = "d-flex justify-content-center";
   // container.textContent = "Loading..."; // 待ち時間の演出
 }
