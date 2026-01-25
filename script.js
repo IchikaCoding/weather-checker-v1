@@ -18,6 +18,10 @@ async function fetchWeather(locationId) {
   // URLはテキストだからlocationIdは文字列のままでOK
   const res = await fetch(
     `https://weather.tsukumijima.net/api/forecast/city/${locationId}`,
+    {
+      method: "GET",
+      headers: { "User-Agent": "IchikaWeatherCheckerV1/1.0" },
+    },
   );
   if (!res.ok) {
     throw new Error("API通信エラー！！");
@@ -27,6 +31,7 @@ async function fetchWeather(locationId) {
   return dataObj;
 }
 
+// TODO: 0.5秒間だけボタンが『休憩中』になって押せなくなる処理を追加する
 /**
  * メインの処理
  */
@@ -67,21 +72,32 @@ async function main() {
     displayError(error);
   }
 }
+// TODO: ボタンを0.5秒間押せなくする処理を書く
+function disabledBtn() {
+  const locationIdElement = document.getElementById("location-id");
+  // 500msだけ待つ
+  setTimeout(() => {
+    locationIdElement.disabled = "true";
+    console.log("こんちか✨️✨️");
+  }, 2000);
+}
+
 /**
  * 画面の表示をリセットする処理
  * TODO: classを作っておくと楽かな？
+ * TODO: ここで`rainInfo.textContent = "";`のせいでdisplayTitle()が動いていないかもしれない
  */
 function clearDisplay() {
   const container = document.getElementById("weather-container");
   const rainInfo = document.getElementById("rain-info");
-  container.textContent = "";
-  rainInfo.textContent = "";
+  container.classList.add("d-none");
+  rainInfo.classList.add("d-none");
 }
 
 // ローディングのアニメーションを削除する関数
 function clearLoading() {
   const spinnerBorder = document.querySelector(".spinner-border");
-  spinnerBorder.hidden = true;
+  spinnerBorder.classList.add("d-none");
 }
 
 /**
@@ -89,7 +105,9 @@ function clearLoading() {
  * @param {Error} error main()で発生したエラー
  */
 function displayError(error) {
-  const container = document.getElementById("weather-container");
+  const errorMessageElement = document.getElementById("error-message");
+  errorMessageElement.classList.remove("d-none");
+  errorMessageElement.textContent = "";
   // h2の要素を作成する
   const headerElement = document.createElement("h2");
   // p要素を作成する
@@ -98,8 +116,8 @@ function displayError(error) {
   headerElement.textContent = "天気予報が取得できませんでした😱";
   pElement.textContent = `${error.message}`;
   // appendChildする
-  container.appendChild(headerElement);
-  container.appendChild(pElement);
+  errorMessageElement.appendChild(headerElement);
+  errorMessageElement.appendChild(pElement);
   // container.innerHTML = `<h2>天気予報が取得できませんでした😱</h2><p>${error.message}</p>`;
 }
 
@@ -151,7 +169,7 @@ function trimId(id) {
 function displayLoading() {
   const container = document.getElementById("weather-container");
   const spinnerBorder = document.querySelector(".spinner-border");
-  spinnerBorder.hidden = false;
+  spinnerBorder.classList.remove("d-none");
   // container.classList = "d-flex justify-content-center";
   // container.textContent = "Loading..."; // 待ち時間の演出
 }
@@ -166,8 +184,14 @@ function displayLoading() {
  */
 
 function renderWeather(data) {
+  // TODO: errorMessageを非表示にする関数を作る
+  const errorMessageElement = document.getElementById("error-message");
+  errorMessageElement.classList.add("d-none");
+  // TODO: コンテナをリセットする関数も作る
   // コンテナのHTML要素を取得
   const container = document.getElementById("weather-container");
+  container.classList.remove("d-none");
+  container.textContent = "";
   // 1) 読み込み中を消す（まるごと消す）
   const titleElement = document.createElement("h2");
 
@@ -334,9 +358,12 @@ function displayMessage({ dateLabel, maxChanceOfRain }) {
 }
 
 /**
+ * TODO: TypeError: Cannot set properties of null (setting 'textContent') at displayTitle (script.js:358:40)　at HTMLButtonElement.main (script.js:66:5)
  * 一日のうちどこかで雨が降る確率を表示する処理
  */
 function displayTitle() {
+  const rainInfoElement = document.getElementById("rain-info");
+  rainInfoElement.classList.remove("d-none");
   const titleChanceOfRainElement = document.getElementById(
     "title-chance-of-rain",
   );
