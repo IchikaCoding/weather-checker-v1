@@ -75,6 +75,9 @@ async function main() {
 // TODO: ボタンを0.5秒間押せなくする処理を書く
 function disabledBtn() {
   const locationIdElement = document.getElementById("location-id");
+  if (!locationIdElement) {
+    throw new Error("locationIdElementのHTML要素がありませんでした。");
+  }
   // 500msだけ待つ
   setTimeout(() => {
     locationIdElement.disabled = "true";
@@ -90,6 +93,9 @@ function disabledBtn() {
 function clearDisplay() {
   const container = document.getElementById("weather-container");
   const rainInfo = document.getElementById("rain-info");
+  if (!container || !rainInfo) {
+    throw new Error("containerかrainInfoのHTML要素がありませんでした。");
+  }
   container.classList.add("d-none");
   rainInfo.classList.add("d-none");
 }
@@ -97,6 +103,9 @@ function clearDisplay() {
 // ローディングのアニメーションを削除する関数
 function clearLoading() {
   const spinnerBorder = document.querySelector(".spinner-border");
+  if (!spinnerBorder) {
+    throw new Error("spinnerBorderのHTML要素がありませんでした。");
+  }
   // spinnerBorder.classList.add("d-none");
   spinnerBorder.hidden = true;
 }
@@ -107,6 +116,12 @@ function clearLoading() {
  */
 function displayError(error) {
   const errorMessageElement = document.getElementById("error-message");
+  // エラー表示関数でエラー投げるとエラーが出せないループに入る
+  // それを防ぐためにここだけはreturnする
+  if (!errorMessageElement) {
+    console.error("errorMessageElementがありませんでした");
+    return;
+  }
   errorMessageElement.classList.remove("d-none");
   errorMessageElement.textContent = "";
   // h2の要素を作成する
@@ -161,6 +176,9 @@ function checkData(data) {
  */
 function getId() {
   const locationIdElement = document.getElementById("location-id");
+  if (!locationIdElement) {
+    throw new Error("locationIdElementのHTML要素がありませんでした。");
+  }
   return locationIdElement.value;
 }
 
@@ -189,6 +207,9 @@ function trimId(id) {
 // TODO: ローディングアニメーション実装
 function displayLoading() {
   const spinnerBorder = document.querySelector(".spinner-border");
+  if (!spinnerBorder) {
+    throw new Error("spinnerBorderのHTML要素がありませんでした。");
+  }
   // spinnerBorder.classList.remove("d-none");
   spinnerBorder.hidden = false;
   // container.classList = "d-flex justify-content-center";
@@ -207,10 +228,16 @@ function displayLoading() {
 function renderWeather(data) {
   // TODO: errorMessageを非表示にする関数を作る
   const errorMessageElement = document.getElementById("error-message");
+  if (!errorMessageElement) {
+    throw new Error("errorMessageElementのHTML要素がありませんでした。");
+  }
   errorMessageElement.classList.add("d-none");
   // TODO: コンテナをリセットする関数も作る
   // コンテナのHTML要素を取得
   const container = document.getElementById("weather-container");
+  if (!container) {
+    throw new Error("containerのHTML要素がありませんでした。");
+  }
   container.classList.remove("d-none");
   container.textContent = "";
   // 1) 読み込み中を消す（まるごと消す）
@@ -363,6 +390,9 @@ function judgeOfRainDay(data) {
 function displayMessage({ dateLabel, maxChanceOfRain }) {
   console.log(maxChanceOfRain, dateLabel);
   const rainMessageElement = document.getElementById("rain-message");
+  if (!rainMessageElement) {
+    throw new Error("rainMessageElementのHTML要素がありませんでした。");
+  }
   // もし70%以上だったら傘忘れずに
   // 40％以上なら
   // 変数を作成したら初期値をいれることは徹底しよう！
@@ -384,10 +414,16 @@ function displayMessage({ dateLabel, maxChanceOfRain }) {
  */
 function displayTitle() {
   const rainInfoElement = document.getElementById("rain-info");
+  if (!rainInfoElement) {
+    throw new Error("rainInfoElementのHTML要素がありませんでした。");
+  }
   rainInfoElement.classList.remove("d-none");
   const titleChanceOfRainElement = document.getElementById(
     "title-chance-of-rain",
   );
+  if (!titleChanceOfRainElement) {
+    throw new Error("titleChanceOfRainElementのHTML要素がありませんでした。");
+  }
   titleChanceOfRainElement.textContent =
     "一日のうちどこかで雨が降る確率は、、？";
 }
