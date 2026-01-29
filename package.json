@@ -1,0 +1,22 @@
+{
+  "name": "weather-checker-v1",
+  "version": "1.0.0",
+  "description": "お天気チェックアプリです。",
+  "main": "sample.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IchikaCoding/weather-checker-v1.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/IchikaCoding/weather-checker-v1/issues"
+  },
+  "homepage": "https://github.com/IchikaCoding/weather-checker-v1#readme"
+}
