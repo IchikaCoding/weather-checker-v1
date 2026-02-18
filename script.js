@@ -10,21 +10,19 @@
 
 /**
  * API通信をして、天気予報のデータをJSオブジェクトとして取得する処理
- * @param {string} locationId 場所のID
+ * → サーバー側でopenmeteoパッケージを使ってデータを取得している
+ * @param {string} cityName 都市名（例：東京、大阪）
  * @returns {Object} dataObj APIで取得したデータのJSのオブジェクト
  */
-async function fetchWeather(locationId) {
-  // fetchしてAPI通信してデータ取得する
-  // URLはテキストだからlocationIdは文字列のままでOK
+async function fetchWeather(cityName) {
+  // 自分のサーバーの /api/weather エンドポイントにリクエストを送る
+  // サーバー側でopenmeteoパッケージを使って天気を取得してくれる
   const res = await fetch(
-    `https://weather.tsukumijima.net/api/forecast/city/${locationId}`,
-    {
-      method: "GET",
-      headers: { "User-Agent": "IchikaWeatherCheckerV1/1.0" },
-    },
+    `/api/weather?name=${encodeURIComponent(cityName)}`,
   );
   if (!res.ok) {
-    throw new Error("API通信エラー！！");
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || "API通信エラー！！");
   }
   const dataObj = await res.json();
   console.log(dataObj);
@@ -38,24 +36,14 @@ async function fetchWeather(locationId) {
 async function main() {
   try {
     displayLoading();
-    // IDのチェック
-    const id = getId();
-    const trimmed = trimId(id);
-    //  id が取得できなかったときの処理を追加
-    if (!isValidNumericInput(trimmed)) {
-      alert("有効な数字を入力してください");
-      throw new Error("有効な数字を入力してください");
+    // 都市名のチェック
+    const cityName = getId();
+    const trimmed = trimId(cityName);
+    //  都市名が入力されていないときの処理
+    if (trimmed === "") {
+      alert("都市名を入力してください（例：東京）");
+      throw new Error("都市名を入力してください");
     }
-    const isSixDigits = (id) => {
-      if (id.length === 6) {
-        return true;
-      }
-      return false;
-    };
-    if (!isSixDigits(trimmed)) {
-      throw new Error("無効なIDです！");
-    }
-    // console.log(id);
     // 非同期処理だけのところでawaitが必要
     //  checkDataはdataが取得できていなかった場合の処理
     const data = checkData(await fetchWeather(trimmed));

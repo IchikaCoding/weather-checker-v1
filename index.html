@@ -18,18 +18,13 @@
     <div class="container py-5">
       <div class="mb-4 text-center"><h1>お天気チェッカー</h1></div>
       <div class="d-flex justify-content-center gap-3 mb-4">
-        <!-- pattern="\d{6}"で0~9までの数字かどうかを6回繰り返しチェックする -->
-        <!-- maxlength="6"で、6桁しか入力できないようになった。 -->
-        <!-- inputmode="numeric"でスマホで数字キーボードが出やすくなる -->
-
+        <!-- 都市名を入力する欄 -->
         <!-- ! w-autoとはブラウザ標準の入力欄の長さに自動調整する -->
         <input
           type="text"
           id="location-id"
           class="form-control w-auto"
-          inputmode="numeric"
-          pattern="\d{6}"
-          maxlength="6"
+          placeholder="都市名（例：東京）"
         />
         <button id="weather-btn" class="btn btn-primary">天気を取得する</button>
       </div>
