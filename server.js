@@ -4,7 +4,12 @@ const path = require("path"); // ファイルの場所を扱う道具
 // openmeteoパッケージはESM専用なので、動的import()で読み込む
 // → require()だとエラーになるので、import()を使う
 let fetchWeatherApi;
+// TODO: modにはモジュールの中身が入るらしい。
+// import()でPromiseが返る（openmeteoのモジュールがチケットとして発行される）
+// →.thenで成功したときの処理を書いている
 import("openmeteo").then((mod) => {
+  // Retrieve data from the Open-Meteo weather API
+  // Promiseを渡して置けば使うときにawaitするだけで使用可能→ちょっとラク？
   fetchWeatherApi = mod.fetchWeatherApi;
   console.log("openmeteoパッケージ読み込み完了 ✅");
 });
@@ -71,10 +76,14 @@ function getMaxPrecipForSlot(precipArray, dayStart, slotStart, slotEnd) {
 // ========== ジオコーディング（都市名 → 緯度・経度） ==========
 // Open-MeteoのジオコーディングAPIを使って、都市名から座標を取得
 async function geocode(name) {
+  console.log("geocode start", name);
   const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=1&language=ja`;
   const res = await fetch(url);
   if (!res.ok) throw new Error("ジオコーディングAPIエラー");
   const data = await res.json();
+  console.log("data.results", Array.isArray(data.results));
+  // よく見る論理和だ！配列の要素が0のときもエラー処理に加える
+  // TODO: 毎回、都市が見つかりませんでしたになっている。
   if (!data.results || data.results.length === 0) {
     throw new Error("都市が見つかりませんでした");
   }
@@ -85,11 +94,14 @@ async function geocode(name) {
 // ブラウザから /api/weather?name=東京 のようにアクセスすると天気データを返す
 app.get("/api/weather", async (req, res) => {
   try {
-    // openmeteoがまだ読み込まれていない場合のチェック
+    // openmeteoのPromise自体がまだ返ってこなかったときの場合の処理
     if (!fetchWeatherApi) {
-      return res.status(503).json({ error: "サーバー準備中です。少し待ってからもう一度試してください。" });
+      // サーバーサイドを実装→自分statusも考える必要がある
+      return res.status(503).json({
+        error: "サーバー準備中です。少し待ってからもう一度試してください。",
+      });
     }
-
+    // TODO: どうやって取ってきているの？
     const cityName = req.query.name;
     if (!cityName) {
       return res.status(400).json({ error: "都市名を指定してください" });
@@ -97,12 +109,15 @@ app.get("/api/weather", async (req, res) => {
 
     // 1. 都市名 → 緯度・経度に変換
     const geo = await geocode(cityName);
-
+    console.log(geo);
     // 2. Open-Meteoで天気データを取得（fetchWeatherApiを使用）
     // 公式ドキュメント: https://open-meteo.com/en/docs
+    // TODO: パラーメータは指定があるのかしら？この文字列は何？要検索
     const params = {
+      // 緯度経度で、どの場所のデータがほしいのか知らせる
       latitude: geo.latitude,
       longitude: geo.longitude,
+      // "precipitation_probability"は https://open-meteo.com/en/docs に書いてあるよ
       hourly: ["precipitation_probability"],
       daily: [
         "weather_code",
@@ -122,12 +137,13 @@ app.get("/api/weather", async (req, res) => {
     const response = responses[0];
 
     // Attributes for timezone and location
+    // utcOffsetSeconds()はどこに書いてあるよ
     const utcOffsetSeconds = response.utcOffsetSeconds();
-
     const hourly = response.hourly();
     const daily = response.daily();
 
     // ドキュメントの weatherData オブジェクト形式に合わせる
+    // TODO: ここから読む👇️
     const weatherData = {
       hourly: {
         time: range(
@@ -194,7 +210,10 @@ app.get("/api/weather", async (req, res) => {
         telop: weatherCodeToJapanese[wmoCode] || "不明",
         temperature: {
           min: {
-            celsius: i === 0 ? null : String(Math.round(weatherData.daily.temperature2mMin[i])),
+            celsius:
+              i === 0
+                ? null
+                : String(Math.round(weatherData.daily.temperature2mMin[i])),
           },
           max: {
             celsius: String(Math.round(weatherData.daily.temperature2mMax[i])),
