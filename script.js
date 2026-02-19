@@ -18,18 +18,22 @@ async function fetchWeather(cityName) {
   // 自分のサーバーの /api/weather エンドポイントにリクエストを送る
   // サーバー側でopenmeteoパッケージを使って天気を取得してくれる
   const res = await fetch(
+    // TODO: encodeURIComponentって何？
     `/api/weather?name=${encodeURIComponent(cityName)}`,
   );
+  console.log("res", typeof res);
   if (!res.ok) {
+    // TODO: このメソッドチェーンはどういう意味？
     const errorData = await res.json().catch(() => ({}));
+    // エラーのデータがあったらそのエラーを返す、もしくはAPI通信エラーにする
     throw new Error(errorData.error || "API通信エラー！！");
   }
+  // resってJOSN文字列？👉️JSのオブジェクトに修正している
   const dataObj = await res.json();
   console.log(dataObj);
   return dataObj;
 }
 
-// TODO: 0.5秒間だけボタンが『休憩中』になって押せなくなる処理を追加する
 /**
  * メインの処理
  */
@@ -37,7 +41,9 @@ async function main() {
   try {
     displayLoading();
     // 都市名のチェック
+    // TODO: IDのチェックはどこでしているのか調べる！👉️都市名で入力しているからIDチェック不要になった？
     const cityName = getId();
+    console.log("cityName", cityName);
     const trimmed = trimId(cityName);
     //  都市名が入力されていないときの処理
     if (trimmed === "") {
@@ -60,7 +66,8 @@ async function main() {
     displayError(error);
   }
 }
-// TODO: ボタンを0.5秒間押せなくする処理を書く
+// TODO: (使っていない)ボタンを0.5秒間押せなくする処理を書く
+
 function disabledBtn() {
   const locationIdElement = document.getElementById("location-id");
   if (!locationIdElement) {
@@ -167,6 +174,7 @@ function getId() {
   if (!locationIdElement) {
     throw new Error("locationIdElementのHTML要素がありませんでした。");
   }
+  // TODO: なぜこれで都市名が取得できるの？
   return locationIdElement.value;
 }
 
@@ -188,6 +196,7 @@ function isValidNumericInput(id) {
  * @returns {string} trimmed
  */
 function trimId(id) {
+  // TODO: トリムしているけど都市名が取れる？
   const trimmed = id.trim();
   return trimmed;
 }
