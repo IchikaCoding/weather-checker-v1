@@ -17,6 +17,9 @@ import("openmeteo").then((mod) => {
 const app = express();
 
 // 静的ファイル（HTML, CSS, JS）を配信する設定
+// 配信するファイルはpublicとかにまとめて置くといいかも！
+// app.use(express.static(path.join(__dirname, "public")));とかになる
+// ディレクトリを結合しない場合はjoinは不要！
 app.use(express.static(path.join(__dirname)));
 
 // ========== WMO天気コード → 日本語テキスト変換表 ==========
@@ -97,7 +100,7 @@ async function geocode(name) {
 }
 
 // ========== 天気取得APIエンドポイント ==========
-// ブラウザから /api/weather?name=東京 のようにアクセスすると天気データを返す
+// ! ブラウザから /api/weather?name=東京 のようにアクセスすると天気データを返す
 app.get("/api/weather", async (req, res) => {
   try {
     // openmeteoのPromise自体がまだ返ってこなかったときの場合の処理
@@ -220,11 +223,15 @@ app.get("/api/weather", async (req, res) => {
         ),
       };
       console.log("chanceOfRain", chanceOfRain);
-
+      // for文で1日ごとにpushで描画している
       forecasts.push({
         date: dateStr,
         dateLabel: dateLabels[i],
+        // 天気の状態を数値から日本語に直して表示する
         telop: weatherCodeToJapanese[wmoCode] || "不明",
+        // 最低気温はどうして0日目だとnullのなるの？
+        // 確認している日の最低気温はその日の朝のうちになっている可能性がある
+        // →nullにして誤解を招かないようにするため
         temperature: {
           min: {
             celsius:
@@ -232,6 +239,7 @@ app.get("/api/weather", async (req, res) => {
                 ? null
                 : String(Math.round(weatherData.daily.temperature2mMin[i])),
           },
+          // 今日どのくらい暑くなるかは役立つからそのまま表示する
           max: {
             celsius: String(Math.round(weatherData.daily.temperature2mMax[i])),
           },
@@ -247,20 +255,27 @@ app.get("/api/weather", async (req, res) => {
       },
       forecasts,
     };
-
+    // TODO: この処理はどうしてやるの？resultってJSのオブジェクトじゃないの？＿
     res.json(result);
   } catch (error) {
     console.error("天気取得エラー:", error);
+    // HTTPステータスコードも定義しておく
     res.status(500).json({ error: error.message });
   }
 });
 
-// トップページ → index.htmlを返す
+// TODO: スラッシュにアクセスしてデータ取得？
+// http://localhost:3000/にアクセスされた → index.htmlを返す
 app.get("/", (req, res) => {
+  // 指定したファイルをそのまま送る
+  // path.joinはどんなときに使うの？
+  // __dirnameは、今いるsever.jsのディレクトリと同じ階層のindex.htmlを
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
+// サーバーを待ち受ける番号を設定
 const PORT = 3000;
+// Expressに命令→Nodeさんに「3000番でアクセス待ちを開始してね」という命令をしている
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
