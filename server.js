@@ -63,13 +63,19 @@ const range = (start, stop, step) =>
 // dayStart: その日の最初のインデックス（0日目なら0、1日目なら24）
 // slotStart, slotEnd: 時間帯の開始・終了（例: 6, 12 → 6時〜12時）
 function getMaxPrecipForSlot(precipArray, dayStart, slotStart, slotEnd) {
+  // 降水確率の最大値を0にしておく
   let max = 0;
+  // 6時～12時だったら、6～11まで繰り返す
   for (let h = slotStart; h < slotEnd; h++) {
+    // 1日目だったら、dayStart=24 👉️6時のidxは 24+6=30 番目
     const idx = dayStart + h;
+    // インデックス番号が配列を超えないようにするための安全装置
     if (idx < precipArray.length) {
+      // 最も降水確率が高い日を知りたい→何日目の何時なのかを知りたい→それがわかると連続データのなかのどの配列の要素がわかる！
       max = Math.max(max, precipArray[idx]);
     }
   }
+  // maxを整数値に直す
   return `${Math.round(max)}%`;
 }
 
@@ -117,7 +123,7 @@ app.get("/api/weather", async (req, res) => {
       // 緯度経度で、どの場所のデータがほしいのか知らせる
       latitude: geo.latitude,
       longitude: geo.longitude,
-      // "precipitation_probability"は https://open-meteo.com/en/docs に書いてあるよ
+      // "precipitation_probability"は降水確率で、 https://open-meteo.com/en/docs に書いてあるよ
       hourly: ["precipitation_probability"],
       daily: [
         "weather_code",
@@ -130,20 +136,27 @@ app.get("/api/weather", async (req, res) => {
     };
 
     const url = "https://api.open-meteo.com/v1/forecast";
+
+    // ----------------データ取得できた後----------------------
+
     const responses = await fetchWeatherApi(url, params);
 
     // ドキュメントのパターンに従ってデータを展開する
     // Process first location
+    // TODO: どうして返ってきた結果の1件目を使用するの？
     const response = responses[0];
 
     // Attributes for timezone and location
-    // utcOffsetSeconds()はどこに書いてあるよ
+    // utcOffsetSeconds()はtime がUTC基準なので、日本時間に直すために使う
     const utcOffsetSeconds = response.utcOffsetSeconds();
+    // hourlyとかdailyはバイナリ情報が取得できるだけ
+    // 私たちが読めるのはhourly.variables(0).valuesArray()のほう
     const hourly = response.hourly();
     const daily = response.daily();
 
     // ドキュメントの weatherData オブジェクト形式に合わせる
     // TODO: ここから読む👇️
+    // precipitationProbabilityは降水確率
     const weatherData = {
       hourly: {
         time: range(
@@ -172,11 +185,14 @@ app.get("/api/weather", async (req, res) => {
 
     for (let i = 0; i < 3; i++) {
       const date = weatherData.daily.time[i];
+      // Tがある場所で区切る。[0]で最初の要素だけ返す。YYYY-MM-DDが返ってくるはず！
       const dateStr = date.toISOString().split("T")[0];
+      // TODO: weatherCodeはいったいなにもの？
+      // 天気の状態が数値で送られてくるからそれを取得している
       const wmoCode = Math.round(weatherData.daily.weatherCode[i]);
+      // 3日間に分けたいけどデータが一時間ごとで連続していたら、for文を3回繰り返して24書けると3回に分けられる
       const dayStart = i * 24; // 1日目=0, 2日目=24, 3日目=48
-
-      // 6時間ごとの降水確率を計算（hourlyデータから）
+      // 6時間のなかで、最も降水確率が高い時間を算出して表示（hourlyデータから）
       const chanceOfRain = {
         T00_06: getMaxPrecipForSlot(
           weatherData.hourly.precipitationProbability,
@@ -203,6 +219,7 @@ app.get("/api/weather", async (req, res) => {
           24,
         ),
       };
+      console.log("chanceOfRain", chanceOfRain);
 
       forecasts.push({
         date: dateStr,
