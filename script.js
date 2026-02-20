@@ -246,6 +246,7 @@ function renderWeather(data) {
 
   // 2) 3日分の天気を表示
   // forEach()は与えられた関数を、配列の各要素に対して一度ずつ実行できる
+  // TODO: 最低・最高気温と表示できるようにしておく
   data.forecasts.forEach((forecast) => {
     const ul = document.createElement("ul");
     const li1 = document.createElement("li");
