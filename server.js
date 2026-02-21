@@ -20,8 +20,8 @@ const app = express();
 // 配信するファイルはpublicとかにまとめて置くといいかも！
 // app.use(express.static(path.join(__dirname, "public")));とかになる
 // ディレクトリを結合しない場合はjoinは不要！
-app.use(express.static(path.join(__dirname)));
-// app.use(express.static(path.join(__dirname, public)));
+// app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname, "public")));
 
 // ========== WMO天気コード → 日本語テキスト変換表 ==========
 // Open-Meteoが返す天気コード（WMO国際基準）を日本語にする
