@@ -59,6 +59,9 @@ const weatherCodeToJapanese = {
 
 // 連続する数値の配列を作る関数（Open-Meteoの時間データ展開用）
 const range = (start, stop, step) =>
+  // シャローコピーしたArrayインスタンスを作成してくれる
+  // 第一引数に配列風オブジェクト、第2引数に処理を書く
+  // 開始から、間隔ごとに進んだ数の一覧を配列で返す
   Array.from({ length: (stop - start) / step }, (_, i) => start + i * step);
 
 // 時間帯ごとの降水確率の最大値を取得する関数
@@ -162,6 +165,7 @@ app.get("/api/weather", async (req, res) => {
     // precipitationProbabilityは降水確率
     const weatherData = {
       hourly: {
+        // ! 最初の時刻から、最後の手前まで、1時間（または1日）ずつ進めた時刻一覧の配列を作成している
         time: range(
           Number(hourly.time()),
           Number(hourly.timeEnd()),
@@ -274,6 +278,7 @@ app.get("/", (req, res) => {
 });
 
 // サーバーを待ち受ける番号を設定
+// 変数は別でまとめて書いておくほうがわかりやすいらしい
 const PORT = 3000;
 // Expressに命令→Nodeさんに「3000番でアクセス待ちを開始してね」という命令をしている
 app.listen(PORT, () => {
